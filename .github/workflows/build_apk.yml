@@ -1,39 +1,34 @@
 name: Build Android APK
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@master
 
     - name: Set up Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@master
       with:
         python-version: '3.8'
 
     - name: Install dependencies
       run: |
+        sudo apt update
+        sudo apt install -y build-essential git
         python -m pip install --upgrade pip
-        pip install buildozer
-        pip install cython
-        pip install kivy
+        pip install buildozer cython kivy
 
     - name: Build APK
       run: |
         buildozer android debug
 
     - name: Upload APK
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@master
       with:
         name: mathpractice-apk
         path: bin/*.apk
