@@ -58,6 +58,11 @@ jobs:
         unzip android-sdk.zip -d ~/.buildozer/android/platform/android-sdk
         rm android-sdk.zip
 
+    - name: Fix SDK Manager path
+      run: |
+        mkdir -p ~/.buildozer/android/platform/android-sdk/tools/bin
+        ln -s ~/.buildozer/android/platform/android-sdk/cmdline-tools/bin/sdkmanager ~/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager
+
     - name: Accept Android SDK licenses
       run: |
         echo "y" | ~/.buildozer/android/platform/android-sdk/cmdline-tools/bin/sdkmanager --licenses > /dev/null 2>&1 || true
