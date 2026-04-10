@@ -65,6 +65,13 @@ jobs:
         mv ~/.buildozer/android/platform/android-sdk/cmdline-tools/cmdline-tools ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest
         rm android-sdk.zip
 
+    - name: Create symlink for sdkmanager
+      run: |
+        # 创建旧路径的符号链接，确保Buildozer能找到sdkmanager
+        mkdir -p ~/.buildozer/android/platform/android-sdk/tools/bin
+        ln -s ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager ~/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager
+        ln -s ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/avdmanager ~/.buildozer/android/platform/android-sdk/tools/bin/avdmanager
+
     - name: Accept Android SDK licenses
       run: |
         # 使用--sdk_root参数明确指定SDK根目录
