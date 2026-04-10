@@ -10,87 +10,40 @@ on:
 jobs:
   build:
     runs-on: ubuntu-22.04
-    env:
-      ANDROID_HOME: /home/runner/.buildozer/android/platform/android-sdk
-      ANDROID_SDK_ROOT: /home/runner/.buildozer/android/platform/android-sdk
-      ANDROID_BUILD_TOOLS_VERSION: 31.0.0
-      ANDROID_PLATFORM_VERSION: 31
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+
+    - name: Cache Buildozer dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.buildozer
+          ~/.gradle
+        key: buildozer-${{ hashFiles('buildozer.spec') }}
+        restore-keys: |
+          buildozer-
 
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.8'
 
-    - name: Install system dependencies
+    - name: Install dependencies
       run: |
         sudo apt update
-        sudo apt install -y \
-            build-essential \
-            git \
-            curl \
-            wget \
-            unzip \
-            openjdk-11-jdk \
-            zipalign \
-            apksigner \
-            lib32z1 \
-            lib32stdc++6 \
-            libgl1-mesa-glx \
-            libx11-xcb1 \
-            libxcb-icccm4 \
-            libxcb-image0 \
-            libxcb-keysyms1 \
-            libxcb-randr0 \
-            libxcb-render-util0 \
-            libxcb-xinerama0 \
-            libxcb-xfixes0
-
-    - name: Install Python dependencies
-      run: |
+        sudo apt install -y build-essential git wget unzip openjdk-11-jdk lib32z1 lib32stdc++6
         python -m pip install --upgrade pip
         pip install buildozer cython==0.29.36 kivy==2.1.0
 
-    - name: Create buildozer directory
-      run: |
-        mkdir -p ~/.buildozer/android/platform
-
-    - name: Download and setup Android SDK
-      run: |
-        # 下载SDK
-        wget -O android-sdk.zip https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
-        
-        # 创建正确的目录结构
-        mkdir -p ~/.buildozer/android/platform/android-sdk/cmdline-tools
-        unzip android-sdk.zip -d ~/.buildozer/android/platform/android-sdk/cmdline-tools
-        mv ~/.buildozer/android/platform/android-sdk/cmdline-tools/cmdline-tools ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest
-        rm android-sdk.zip
-
-    - name: Create symlink for sdkmanager
-      run: |
-        # 创建旧路径的符号链接，确保Buildozer能找到sdkmanager
-        mkdir -p ~/.buildozer/android/platform/android-sdk/tools/bin
-        ln -s ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager ~/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager
-        ln -s ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/avdmanager ~/.buildozer/android/platform/android-sdk/tools/bin/avdmanager
-
-    - name: Accept Android SDK licenses
-      run: |
-        # 使用--sdk_root参数明确指定SDK根目录
-        yes | ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager --sdk_root=${{ env.ANDROID_HOME }} --licenses
-        yes | ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager --sdk_root=${{ env.ANDROID_HOME }} "platform-tools" "platforms;android-${{ env.ANDROID_PLATFORM_VERSION }}" "build-tools;${{ env.ANDROID_BUILD_TOOLS_VERSION }}"
-
-    - name: Update PATH
-      run: |
-        echo "export PATH=\$PATH:${{ env.ANDROID_HOME }}/platform-tools" >> ~/.bashrc
-        echo "export PATH=\$PATH:${{ env.ANDROID_HOME }}/cmdline-tools/latest/bin" >> ~/.bashrc
-        echo "export PATH=\$PATH:${{ env.ANDROID_HOME }}/build-tools/${{ env.ANDROID_BUILD_TOOLS_VERSION }}" >> ~/.bashrc
-        source ~/.bashrc
-
     - name: Build APK
       run: |
+        # 设置环境变量
+        export ANDROID_HOME=~/.buildozer/android/platform/android-sdk
+        export ANDROID_SDK_ROOT=~/.buildozer/android/platform/android-sdk
+        
+        # 构建APK
         buildozer android debug --verbose
 
     - name: Upload APK
