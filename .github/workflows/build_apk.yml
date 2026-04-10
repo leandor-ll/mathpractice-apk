@@ -37,6 +37,19 @@ jobs:
         python -m pip install --upgrade pip
         pip install buildozer cython==0.29.36 kivy==2.1.0
 
+    - name: Accept Android SDK licenses
+      run: |
+        # 下载SDK命令行工具
+        mkdir -p ~/.buildozer/android/platform/android-sdk/cmdline-tools
+        wget -O sdk-tools.zip https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
+        unzip sdk-tools.zip -d ~/.buildozer/android/platform/android-sdk/cmdline-tools
+        mv ~/.buildozer/android/platform/android-sdk/cmdline-tools/cmdline-tools ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest
+        rm sdk-tools.zip
+        
+        # 接受许可证
+        yes | ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager --sdk_root=~/.buildozer/android/platform/android-sdk --licenses
+        yes | ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager --sdk_root=~/.buildozer/android/platform/android-sdk "platform-tools" "platforms;android-31" "build-tools;31.0.0"
+
     - name: Build APK
       run: |
         # 设置环境变量
