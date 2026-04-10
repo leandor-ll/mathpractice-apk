@@ -9,6 +9,8 @@ jobs:
     env:
       ANDROID_HOME: /home/runner/.buildozer/android/platform/android-sdk
       ANDROID_SDK_ROOT: /home/runner/.buildozer/android/platform/android-sdk
+      ANDROID_BUILD_TOOLS_VERSION: 31.0.0
+      ANDROID_PLATFORM_VERSION: 31
 
     steps:
     - name: Checkout code
@@ -62,16 +64,18 @@ jobs:
       run: |
         mkdir -p ~/.buildozer/android/platform/android-sdk/tools/bin
         ln -s ~/.buildozer/android/platform/android-sdk/cmdline-tools/bin/sdkmanager ~/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager
+        ln -s ~/.buildozer/android/platform/android-sdk/cmdline-tools/bin/avdmanager ~/.buildozer/android/platform/android-sdk/tools/bin/avdmanager
 
     - name: Accept Android SDK licenses
       run: |
-        echo "y" | ~/.buildozer/android/platform/android-sdk/cmdline-tools/bin/sdkmanager --licenses > /dev/null 2>&1 || true
-        echo "y" | ~/.buildozer/android/platform/android-sdk/cmdline-tools/bin/sdkmanager "platform-tools" "platforms;android-31" "build-tools;31.0.0" > /dev/null 2>&1 || true
+        yes | ~/.buildozer/android/platform/android-sdk/cmdline-tools/bin/sdkmanager --licenses
+        yes | ~/.buildozer/android/platform/android-sdk/cmdline-tools/bin/sdkmanager "platform-tools" "platforms;android-${{ env.ANDROID_PLATFORM_VERSION }}" "build-tools;${{ env.ANDROID_BUILD_TOOLS_VERSION }}"
 
     - name: Update PATH
       run: |
         echo "export PATH=\$PATH:~/.buildozer/android/platform/android-sdk/platform-tools" >> ~/.bashrc
         echo "export PATH=\$PATH:~/.buildozer/android/platform/android-sdk/cmdline-tools/bin" >> ~/.bashrc
+        echo "export PATH=\$PATH:~/.buildozer/android/platform/android-sdk/build-tools/${{ env.ANDROID_BUILD_TOOLS_VERSION }}" >> ~/.bashrc
         source ~/.bashrc
 
     - name: Build APK
