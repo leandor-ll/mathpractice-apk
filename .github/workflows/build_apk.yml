@@ -5,30 +5,45 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@master
+      uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@master
+      uses: actions/setup-python@v5
       with:
         python-version: '3.8'
 
-    - name: Install dependencies
+    - name: Install system dependencies
       run: |
         sudo apt update
-        sudo apt install -y build-essential git
+        sudo apt install -y \
+            build-essential \
+            git \
+            curl \
+            wget \
+            unzip \
+            openjdk-11-jdk \
+            zipalign \
+            apksigner
+
+    - name: Install Python dependencies
+      run: |
         python -m pip install --upgrade pip
         pip install buildozer cython kivy
 
+    - name: Initialize Buildozer
+      run: |
+        buildozer init
+
     - name: Build APK
       run: |
-        buildozer android debug
+        buildozer android debug --verbose
 
     - name: Upload APK
-      uses: actions/upload-artifact@master
+      uses: actions/upload-artifact@v4
       with:
         name: mathpractice-apk
         path: bin/*.apk
