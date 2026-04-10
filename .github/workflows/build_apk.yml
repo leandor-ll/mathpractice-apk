@@ -13,9 +13,9 @@ jobs:
 
     - name: Build APK using Docker
       run: |
-        # 使用预构建的Buildozer Docker镜像
-        docker run --rm -v $(pwd):/app -w /app kivy/buildozer:latest bash -c "
-          buildozer android debug
+        # 使用预构建的Buildozer Docker镜像，以root身份运行并自动回答确认
+        docker run --rm -v $(pwd):/app -w /app --user root kivy/buildozer:latest bash -c "
+          yes | buildozer android debug
         "
 
     - name: Upload APK
